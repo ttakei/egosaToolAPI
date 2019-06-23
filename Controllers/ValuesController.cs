@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace egosaToolAPI.Controllers
+namespace EgosaToolAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
