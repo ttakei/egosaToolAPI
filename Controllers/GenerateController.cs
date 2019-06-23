@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EgosaToolAPI.Models.Db;
+using EgosaToolAPI.Models.Chatwork;
 using EgosaToolAPI.Models.Twitter;
 using EgosaToolAPI.Models.Twitter.Response;
 using Microsoft.AspNetCore.Http;
@@ -50,12 +51,23 @@ namespace EgosaToolAPI.Controllers
                 }
             }
 
+            // ChatWorkに投稿
+            using (var client = new ChatworkApiClient())
+            {
+                foreach (TwitterApiResponseStatus tweet in twitterComments)
+                {
+                    // TODO: roomIdのリストをDBから取得
+                    var task = client.post("155649037", tweet);
+                }
+            }
+
+
             // DBに格納
             // TODO: レスポンスの変換処理を別の場所に移動
             using (var context = new CommentsContext())
             {
                 twitterComments.Sort();
-                foreach (TwitterApiResponseStatus twitterComment in twitterComments)
+                foreach (TwitterApiResponseStatus tweet in twitterComments)
                 {
                     var comment = new Comment
                     {
@@ -63,12 +75,12 @@ namespace EgosaToolAPI.Controllers
                         CommentTagSetId = 1,
                         // TODO: 定数化
                         Source = "twitter",
-                        SourceCommentId = twitterComment.id_str,
+                        SourceCommentId = tweet.id_str,
                         PostAt = DateTime.ParseExact(
-                            twitterComment.created_at,
+                            tweet.created_at,
                             "ddd MMM dd HH:mm:ss K yyyy",
                             System.Globalization.DateTimeFormatInfo.InvariantInfo),
-                        Body = twitterComment.text,
+                        Body = tweet.text,
                         SearchedAt = DateTime.Now,
                         // TODO: 定数化orパラメータ化
                         SearchWord = "オトギフロンティア"
