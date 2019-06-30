@@ -12,16 +12,20 @@ namespace EgosaToolAPI.Controllers
     [ApiController]
     public class CommentsController : ControllerBase
     {
+        private readonly ApplicationDbContext _db = null;
+
+        public CommentsController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
         // GET api/comments
         [HttpGet]
         public ActionResult<string> Get(String tag_group, String source)
         {
             // 全コメントの取得
-            using (var context = new CommentsContext())
-            {
-                return JsonConvert.SerializeObject(
-                    context.Comments.OrderByDescending(a => a.Id));
-            }
+            return JsonConvert.SerializeObject(
+                _db.Comments.OrderByDescending(a => a.Id));
         }
     }
 }

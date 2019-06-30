@@ -15,18 +15,23 @@ namespace EgosaToolAPI.Controllers
     [ApiController]
     public class GenerateController : ControllerBase
     {
+        private readonly ApplicationDbContext _db = null;
+
+        public GenerateController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
         // POST: api/generate/twitter
         [HttpPost]
         public void PostTwitter()
         {
             // 過去に取得したtweetIdの最大値を取得
             String sinceTwitterCommentId;
-            using (var context = new CommentsContext()) {
-                sinceTwitterCommentId = context.Comments
-                    .Where(c => c.Source == "twitter")
-                    .Select(c => c.SourceCommentId)
-                    .Max() ?? "0";
-            }
+            sinceTwitterCommentId = _db.Comments
+                .Where(c => c.Source == "twitter")
+                .Select(c => c.SourceCommentId)
+                .Max() ?? "0";
 
             // twitterAPIからtweet取得
             // TODO: 定数化orパラメタ化
@@ -64,33 +69,29 @@ namespace EgosaToolAPI.Controllers
 
             // DBに格納
             // TODO: レスポンスの変換処理を別の場所に移動
-            using (var context = new CommentsContext())
+            twitterComments.Sort();
+            foreach (TwitterApiResponseStatus tweet in twitterComments)
             {
-                twitterComments.Sort();
-                foreach (TwitterApiResponseStatus tweet in twitterComments)
+                var comment = new Comment
                 {
-                    var comment = new Comment
-                    {
-                        // TODO: タグ管理
-                        CommentTagSetId = 1,
-                        // TODO: 定数化
-                        Source = "twitter",
-                        SourceCommentId = tweet.id_str,
-                        PostAt = DateTime.ParseExact(
-                            tweet.created_at,
-                            "ddd MMM dd HH:mm:ss K yyyy",
-                            System.Globalization.DateTimeFormatInfo.InvariantInfo),
-                        Body = tweet.text,
-                        SearchedAt = DateTime.Now,
-                        // TODO: 定数化orパラメータ化
-                        SearchWord = "オトギフロンティア"
-                    };
+                    // TODO: タグ管理
+                    CommentTagSetId = 1,
+                    // TODO: 定数化
+                    Source = "twitter",
+                    SourceCommentId = tweet.id_str,
+                    PostAt = DateTime.ParseExact(
+                        tweet.created_at,
+                        "ddd MMM dd HH:mm:ss K yyyy",
+                        System.Globalization.DateTimeFormatInfo.InvariantInfo),
+                    Body = tweet.text,
+                    SearchedAt = DateTime.Now,
+                    // TODO: 定数化orパラメータ化
+                    SearchWord = "オトギフロンティア"
+                };
 
-                    context.Comments.Add(comment);
-                }
-
-                context.SaveChanges();
+                _db.Comments.Add(comment);
             }
+            _db.SaveChanges();
         }
     }
 }

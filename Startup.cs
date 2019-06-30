@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
+using EgosaToolAPI.Modules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -15,9 +17,11 @@ namespace EgosaToolAPI
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration = null;
+
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            _configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -42,6 +46,11 @@ namespace EgosaToolAPI
 
             app.UseHttpsRedirection();
             app.UseMvc();
+        }
+
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            builder.RegisterModule(new ApplicationModule(_configuration));
         }
     }
 }

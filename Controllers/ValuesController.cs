@@ -1,9 +1,12 @@
-﻿using System;
+﻿using EgosaToolAPI.Models.Db;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using System.Data.Common;
 
 namespace EgosaToolAPI.Controllers
 {
@@ -11,18 +14,23 @@ namespace EgosaToolAPI.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        private readonly IConfiguration _configuration = null;
+        private readonly ApplicationDbContext _db = null;
 
-        public ValuesController(IConfiguration configuration)
+        public ValuesController(IConfiguration configuration, ApplicationDbContext db)
         {
-            _configuration = configuration;
+            _db = db;
         }
 
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        //public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<string> Get()
         {
-            return new string[] { "value1", "value2", _configuration["read-user"] };
+            // 全コメントの取得
+            return JsonConvert.SerializeObject(
+                _db.Comments.OrderByDescending(a => a.Id));
+
+            // return new string[] { "value1", "value2", _configuration["read-user"] };
         }
 
         // GET api/values/5

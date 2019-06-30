@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Autofac.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace EgosaToolAPI
                         }
                     }
                 )
+                .ConfigureServices(services => services.AddAutofac())
                 .UseStartup<Startup>();
     }
 }
