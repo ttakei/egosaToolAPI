@@ -1,34 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using EgosaToolAPI.Models.Db;
 using EgosaToolAPI.Models.Chatwork;
 using EgosaToolAPI.Models.Twitter;
 using EgosaToolAPI.Models.Twitter.Response;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EgosaToolAPI.Controllers
+namespace EgosaToolAPI.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("v{version:apiVersion}/[controller]")]
     [ApiController]
     public class GenerateController : ControllerBase
     {
-        private readonly ApplicationDbContext _db = null;
+        private readonly ApplicationDbContext db = null;
 
         public GenerateController(ApplicationDbContext db)
         {
-            _db = db;
+            this.db = db;
         }
 
-        // POST: api/generate/twitter
-        [HttpPost]
-        public void PostTwitter()
+        public ActionResult<string> Twitter()
         {
             // 過去に取得したtweetIdの最大値を取得
             String sinceTwitterCommentId;
-            sinceTwitterCommentId = _db.Comments
+            sinceTwitterCommentId = db.Comments
                 .Where(c => c.Source == "twitter")
                 .Select(c => c.SourceCommentId)
                 .Max() ?? "0";
@@ -89,9 +86,11 @@ namespace EgosaToolAPI.Controllers
                     SearchWord = "オトギフロンティア"
                 };
 
-                _db.Comments.Add(comment);
+                db.Comments.Add(comment);
             }
-            _db.SaveChanges();
+            db.SaveChanges();
+
+            return "OK";
         }
     }
 }
