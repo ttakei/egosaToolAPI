@@ -15,47 +15,44 @@ namespace EgosaToolAPI.Controllers.V1
     public class GenerateController : ControllerBase
     {
         private readonly ApplicationDbContext db = null;
+        private readonly TwitterApiClient twitter = null;
         private readonly ChatworkApiClient chatwork = null;
 
         public GenerateController(
             ApplicationDbContext db,
+            TwitterApiClient twitter,
             ChatworkApiClient chatwork
         )
         {
             this.db = db;
+            this.twitter = twitter;
             this.chatwork = chatwork;
         }
 
         public ActionResult<string> Twitter()
         {
             // 過去に取得したtweetIdの最大値を取得
-            String sinceTwitterCommentId;
-            sinceTwitterCommentId = db.Comments
+            string sinceTwitterCommentId = db.Comments
                 .Where(c => c.Source == "twitter")
                 .Select(c => c.SourceCommentId)
                 .Max() ?? "0";
 
             // twitterAPIからtweet取得
-            // TODO: 定数化orパラメタ化
-            // TODO: 最新100件しか取れてない
             var twitterComments = new List<TwitterApiResponseStatus>();
-            String maxTwitterCommentId = "";
-            using (var client = new TwitterApiClient()) {
-                int count = 0;
-                while (true)
+            var maxTwitterCommentId = "";
+            var count = 0;
+            while (true)
+            {
+                var task = twitter.get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
+                task.Wait();
+                var response = task.Result;
+                twitterComments.AddRange(response.statuses);
+                if (response.statuses.Count() < 100 || ++count > 50)
                 {
-                    var task = client.get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
-                    //task.Start();
-                    task.Wait();
-                    var response = task.Result;
-                    twitterComments.AddRange(response.statuses);
-                    if (response.statuses.Count() < 100 || ++count > 50)
-                    {
-                        break;
-                    }
-                    maxTwitterCommentId = Convert.ToString(
-                        long.Parse(response.statuses.Min(status => status.id_str)) - 1);
+                    break;
                 }
+                maxTwitterCommentId = Convert.ToString(
+                    long.Parse(response.statuses.Min(status => status.id_str)) - 1);
             }
 
             // ChatWorkに投稿
@@ -73,15 +70,12 @@ namespace EgosaToolAPI.Controllers.V1
 
 
             // DBに格納
-            // TODO: レスポンスの変換処理を別の場所に移動
             twitterComments.Sort();
             foreach (TwitterApiResponseStatus tweet in twitterComments)
             {
                 var comment = new Comment
                 {
-                    // TODO: タグ管理
                     CommentTagSetId = 1,
-                    // TODO: 定数化
                     Source = "twitter",
                     SourceCommentId = tweet.id_str,
                     PostAt = DateTime.ParseExact(
@@ -90,7 +84,6 @@ namespace EgosaToolAPI.Controllers.V1
                         System.Globalization.DateTimeFormatInfo.InvariantInfo),
                     Body = tweet.text,
                     SearchedAt = DateTime.Now,
-                    // TODO: 定数化orパラメータ化
                     SearchWord = "オトギフロンティア"
                 };
 

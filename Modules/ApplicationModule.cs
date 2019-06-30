@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using EgosaToolAPI.Models.Chatwork;
 using EgosaToolAPI.Models.Db;
+using EgosaToolAPI.Models.Twitter;
 using Microsoft.Extensions.Configuration;
 
 
@@ -21,6 +22,12 @@ namespace EgosaToolAPI.Modules
                 .RegisterType<ApplicationDbContext>()
                 .WithParameter("options", ApplicationDbContextOptionsFactory.Get(config))
                 .InstancePerLifetimeScope();
+
+            // TODO: scopeが適切か確認
+            builder
+                .RegisterType<TwitterApiClient>()
+                .WithParameter("config", config)
+                .SingleInstance();
 
             // TODO: scopeが適切か確認
             builder
