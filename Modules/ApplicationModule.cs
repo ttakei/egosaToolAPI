@@ -1,31 +1,32 @@
 ﻿using Autofac;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using EgosaToolAPI.Models.Chatwork;
 using EgosaToolAPI.Models.Db;
 using Microsoft.Extensions.Configuration;
-using System.Data.Entity;
-using System.Data.Entity.ModelConfiguration;
 
 
 namespace EgosaToolAPI.Modules
 {
     public class ApplicationModule : Module
     {
-        private readonly IConfiguration _configuration = null;
+        private readonly IConfiguration config = null;
 
-        public ApplicationModule(IConfiguration configuration)
+        public ApplicationModule(IConfiguration config)
         {
-            _configuration = configuration;
+            this.config = config;
         }
 
         protected override void Load(ContainerBuilder builder)
         {
             builder
                 .RegisterType<ApplicationDbContext>()
-                .WithParameter("options", ApplicationDbContextOptionsFactory.Get(_configuration))
+                .WithParameter("options", ApplicationDbContextOptionsFactory.Get(config))
                 .InstancePerLifetimeScope();
+
+            // TODO: scopeが適切か確認
+            builder
+                .RegisterType<ChatworkApiClient>()
+                .WithParameter("config", config)
+                .SingleInstance();
         }
     }
 }

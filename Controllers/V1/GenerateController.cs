@@ -15,10 +15,15 @@ namespace EgosaToolAPI.Controllers.V1
     public class GenerateController : ControllerBase
     {
         private readonly ApplicationDbContext db = null;
+        private readonly ChatworkApiClient chatwork = null;
 
-        public GenerateController(ApplicationDbContext db)
+        public GenerateController(
+            ApplicationDbContext db,
+            ChatworkApiClient chatwork
+        )
         {
             this.db = db;
+            this.chatwork = chatwork;
         }
 
         public ActionResult<string> Twitter()
@@ -41,7 +46,7 @@ namespace EgosaToolAPI.Controllers.V1
                 {
                     var task = client.get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
                     //task.Start();
-                    //task.Wait();
+                    task.Wait();
                     var response = task.Result;
                     twitterComments.AddRange(response.statuses);
                     if (response.statuses.Count() < 100 || ++count > 50)
@@ -54,12 +59,15 @@ namespace EgosaToolAPI.Controllers.V1
             }
 
             // ChatWorkに投稿
-            using (var client = new ChatworkApiClient())
+            foreach (TwitterApiResponseStatus tweet in twitterComments)
             {
-                foreach (TwitterApiResponseStatus tweet in twitterComments)
+                // TODO: roomIdのリストをDBから取得
+                var roomIdList = new string[] { "155649037" };
+
+                foreach (var roomId in roomIdList)
                 {
-                    // TODO: roomIdのリストをDBから取得
-                    var task = client.post("155649037", tweet);
+                    // ChatworkApiへの負荷を考慮し同期実行
+                    chatwork.post(roomId, tweet).Wait();
                 }
             }
 
