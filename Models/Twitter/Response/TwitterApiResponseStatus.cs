@@ -1,21 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace EgosaToolAPI.Models.Twitter.Response
 {
     public class TwitterApiResponseStatus : IComparable
     {
-        public String created_at;
-        public String id_str;
+        [JsonProperty(PropertyName = "created_at")]
+        public String createdAt;
+
+        [JsonProperty(PropertyName = "id_str")]
+        public String idStr;
+
+        [JsonProperty(PropertyName = "text")]
         public String text;
+
+        [JsonProperty(PropertyName = "user")]
         public TwitterApiResponseStatusUser user;
 
         public int CompareTo(object obj)
         {
             TwitterApiResponseStatus i = obj as TwitterApiResponseStatus;
-            return this.id_str.CompareTo(i.id_str);
+            return idStr.CompareTo(i.idStr);
         }
     }
 }

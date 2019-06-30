@@ -26,7 +26,7 @@ namespace EgosaToolAPI.Models.Chatwork
         public async Task<HttpResponseMessage> post(String roomId, TwitterApiResponseStatus tweet)
         {
             var url = $"https://api.chatwork.com/v2/rooms/{HttpUtility.UrlEncode(roomId)}/messages";
-            var postBody = $"[hr][info]{tweet.text}[/info]by {tweet.user.name}  at {tweet.created_at}";
+            var postBody = $"[hr][info]{tweet.text}[/info]by {tweet.user.name}  at {tweet.createdAt}";
 
             var request = new HttpRequestMessage(HttpMethod.Post, url);
             request.Content = new FormUrlEncodedContent(new Dictionary<string, string> {

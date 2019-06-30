@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EgosaToolAPI.Models.Db
 {
     public class CommentTagSetTag
     {
         public int Id { get; set; }
-        // コメントタグセットID
-        // public string CommnetTagSetId { get; set; }
-        // コメントタグセット
-        public virtual CommentTagSet CommentTagSet { get; set; }
-        // タグID
-        // public string TagId { get; set; }
-        // タグID
-        public virtual Tag Tag { get; set; }
+
+        [ForeignKey("CommentTagSet")]
+        public int CommentTagSetId { get; set; }
+        public CommentTagSet CommentTagSet { get; set; }
+
+        [ForeignKey("Tag")]
+        public string TagId { get; set; }
+        public Tag Tag { get; set; }
     }
 }

@@ -6,6 +6,7 @@ using EgosaToolAPI.Models.Chatwork;
 using EgosaToolAPI.Models.Twitter;
 using EgosaToolAPI.Models.Twitter.Response;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace EgosaToolAPI.Controllers.V1
 {
@@ -29,7 +30,7 @@ namespace EgosaToolAPI.Controllers.V1
             this.chatwork = chatwork;
         }
 
-        public ActionResult<string> Twitter()
+        public async Task<ActionResult<string>> Twitter()
         {
             // 過去に取得したtweetIdの最大値を取得
             string sinceTwitterCommentId = db.Comments
@@ -43,16 +44,14 @@ namespace EgosaToolAPI.Controllers.V1
             var count = 0;
             while (true)
             {
-                var task = twitter.get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
-                task.Wait();
-                var response = task.Result;
+                var response = await twitter.get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
                 twitterComments.AddRange(response.statuses);
                 if (response.statuses.Count() < 100 || ++count > 50)
                 {
                     break;
                 }
                 maxTwitterCommentId = Convert.ToString(
-                    long.Parse(response.statuses.Min(status => status.id_str)) - 1);
+                    long.Parse(response.statuses.Min(status => status.idStr)) - 1);
             }
 
             // ChatWorkに投稿
@@ -63,8 +62,7 @@ namespace EgosaToolAPI.Controllers.V1
 
                 foreach (var roomId in roomIdList)
                 {
-                    // ChatworkApiへの負荷を考慮し同期実行
-                    chatwork.post(roomId, tweet).Wait();
+                    await chatwork.post(roomId, tweet);
                 }
             }
 
@@ -77,9 +75,9 @@ namespace EgosaToolAPI.Controllers.V1
                 {
                     CommentTagSetId = 1,
                     Source = "twitter",
-                    SourceCommentId = tweet.id_str,
+                    SourceCommentId = tweet.idStr,
                     PostAt = DateTime.ParseExact(
-                        tweet.created_at,
+                        tweet.createdAt,
                         "ddd MMM dd HH:mm:ss K yyyy",
                         System.Globalization.DateTimeFormatInfo.InvariantInfo),
                     Body = tweet.text,
