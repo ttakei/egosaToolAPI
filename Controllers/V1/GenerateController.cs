@@ -34,66 +34,66 @@ namespace EgosaToolAPI.Controllers.V1
         public async Task<ActionResult<string>> Twitter()
         {
             // 過去に取得したtweetIdの最大値を取得
-            var latestComments = await db.Comments
+            var latestComment = await db.Comments
                 .Where(a => a.Source == "twitter")
                 .OrderByDescending(a => a.SourceCommentId)
-                .Take(1)
                 .Select(a => a.SourceCommentId)
-                .ToListAsync();
-            var sinceTwitterCommentId = latestComments.Any() ? latestComments[0] : "0";
+                .FirstOrDefaultAsync();
+
+            var sinceTwitterCommentId = latestComment ?? "0";
 
             // twitterAPIからtweet取得
             var twitterComments = new List<TwitterApiResponseStatus>();
-            var maxTwitterCommentId = "";
+            var maxTwitterCommentId = String.Empty;
             var count = 0;
+
             while (true)
             {
-                var response = await twitter.get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
-                twitterComments.AddRange(response.statuses);
-                if (response.statuses.Count() < 100 || ++count > 50)
+                var response = await twitter.Get(sinceTwitterCommentId, maxTwitterCommentId, "オトギフロンティア");
+                twitterComments.AddRange(response.Statuses);
+                if (response.Statuses.Count() < 100 || ++count > 50)
                 {
                     break;
                 }
                 maxTwitterCommentId = Convert.ToString(
-                    long.Parse(response.statuses.Min(status => status.idStr)) - 1);
+                    long.Parse(response.Statuses.Min(status => status.IdStr)) - 1);
             }
 
             // ChatWorkに投稿
-            foreach (TwitterApiResponseStatus tweet in twitterComments)
+            foreach (var tweet in twitterComments)
             {
                 // TODO: roomIdのリストをDBから取得
                 var roomIdList = new string[] { "155649037" };
 
                 foreach (var roomId in roomIdList)
                 {
-                    await chatwork.post(roomId, tweet);
+                    await chatwork.Post(roomId, tweet);
                 }
             }
 
-
             // DBに格納
-            twitterComments.Sort();
-            foreach (TwitterApiResponseStatus tweet in twitterComments)
+            foreach (var tweet in twitterComments.OrderBy(t => t.IdStr))
             {
                 var comment = new Comment
                 {
                     CommentTagSetId = 1,
                     Source = "twitter",
-                    SourceCommentId = tweet.idStr,
+                    SourceCommentId = tweet.IdStr,
                     PostAt = DateTime.ParseExact(
-                        tweet.createdAt,
+                        tweet.CreatedAt,
                         "ddd MMM dd HH:mm:ss K yyyy",
                         System.Globalization.DateTimeFormatInfo.InvariantInfo),
-                    Body = tweet.text,
+                    Body = tweet.Text,
                     SearchedAt = DateTime.Now,
                     SearchWord = "オトギフロンティア"
                 };
 
                 db.Comments.Add(comment);
             }
+
             await db.SaveChangesAsync();
 
-            return "OK";
+            return Ok("ok");
         }
     }
 }

@@ -3,24 +3,18 @@ using System;
 
 namespace EgosaToolAPI.Models.Twitter.Response
 {
-    public class TwitterApiResponseStatus : IComparable
+    public class TwitterApiResponseStatus
     {
         [JsonProperty(PropertyName = "created_at")]
-        public String createdAt;
+        public string CreatedAt { get; set; }
 
         [JsonProperty(PropertyName = "id_str")]
-        public String idStr;
+        public string IdStr { get; set; }
 
         [JsonProperty(PropertyName = "text")]
-        public String text;
+        public string Text { get; set; }
 
         [JsonProperty(PropertyName = "user")]
-        public TwitterApiResponseStatusUser user;
-
-        public int CompareTo(object obj)
-        {
-            TwitterApiResponseStatus i = obj as TwitterApiResponseStatus;
-            return idStr.CompareTo(i.idStr);
-        }
+        public TwitterApiResponseStatusUser User { get; set; }
     }
 }
