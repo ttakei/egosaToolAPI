@@ -35,10 +35,10 @@ namespace EgosaToolAPI.Controllers.V1
         {
             // 過去に取得したtweetIdの最大値を取得
             var latestComments = await db.Comments
-                .Where(c => c.Source == "twitter")
+                .Where(a => a.Source == "twitter")
                 .OrderByDescending(a => a.SourceCommentId)
                 .Take(1)
-                .Select(c => c.SourceCommentId)
+                .Select(a => a.SourceCommentId)
                 .ToListAsync();
             var sinceTwitterCommentId = latestComments.Any() ? latestComments[0] : "0";
 

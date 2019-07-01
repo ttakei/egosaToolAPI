@@ -10,11 +10,11 @@ namespace EgosaToolAPI
 {
     public class Startup
     {
-        private readonly IConfiguration _configuration = null;
+        private readonly IConfiguration config = null;
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration config)
         {
-            _configuration = configuration;
+            this.config = config;
         }
 
         public IConfiguration Configuration { get; }
@@ -49,7 +49,7 @@ namespace EgosaToolAPI
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
-            builder.RegisterModule(new ApplicationModule(_configuration));
+            builder.RegisterModule(new ApplicationModule(config));
         }
     }
 }
