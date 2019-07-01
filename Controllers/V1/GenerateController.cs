@@ -7,6 +7,7 @@ using EgosaToolAPI.Models.Twitter;
 using EgosaToolAPI.Models.Twitter.Response;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace EgosaToolAPI.Controllers.V1
 {
@@ -33,10 +34,13 @@ namespace EgosaToolAPI.Controllers.V1
         public async Task<ActionResult<string>> Twitter()
         {
             // 過去に取得したtweetIdの最大値を取得
-            string sinceTwitterCommentId = db.Comments
+            var latestComments = await db.Comments
                 .Where(c => c.Source == "twitter")
+                .OrderByDescending(a => a.SourceCommentId)
+                .Take(1)
                 .Select(c => c.SourceCommentId)
-                .Max() ?? "0";
+                .ToListAsync();
+            var sinceTwitterCommentId = latestComments.Any() ? latestComments[0] : "0";
 
             // twitterAPIからtweet取得
             var twitterComments = new List<TwitterApiResponseStatus>();
@@ -87,7 +91,7 @@ namespace EgosaToolAPI.Controllers.V1
 
                 db.Comments.Add(comment);
             }
-            db.SaveChanges();
+            await db.SaveChangesAsync();
 
             return "OK";
         }

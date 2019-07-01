@@ -1,7 +1,9 @@
 ﻿using EgosaToolAPI.Models.Db;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EgosaToolAPI.Controllers.V1
 {
@@ -17,11 +19,11 @@ namespace EgosaToolAPI.Controllers.V1
             this.db = db;
         }
 
-        public ActionResult<string> Get()
+        public async Task<ActionResult<string>> Get()
         {
             // 全コメントの取得
-            return JsonConvert.SerializeObject(
-                db.Comments.OrderByDescending(a => a.Id));
+            var comments = await db.Comments.OrderByDescending(a => a.Id).ToListAsync();
+            return JsonConvert.SerializeObject(comments);
         }
     }
 }
