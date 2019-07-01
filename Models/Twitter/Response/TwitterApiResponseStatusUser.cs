@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using System;
 
 namespace EgosaToolAPI.Models.Twitter.Response
 {
     public class TwitterApiResponseStatusUser
     {
-        public String id_str;
+        [JsonProperty(PropertyName = "id_str")]
+        public String idStr;
+
+        [JsonProperty(PropertyName = "name")]
         public String name;
     }
 }

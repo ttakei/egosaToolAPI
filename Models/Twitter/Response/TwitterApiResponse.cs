@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace EgosaToolAPI.Models.Twitter.Response
 {
     public class TwitterApiResponse
     {
-        public List<TwitterApiResponseStatus> statuses;
+        [JsonProperty(PropertyName = "statuses")]
+        public List<TwitterApiResponseStatus> Statuses { get; set; }
     }
 }
